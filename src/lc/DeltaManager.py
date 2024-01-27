@@ -1,5 +1,4 @@
 from src.Config import Config
-from src.lora import AutoLoraModel
 import numpy as np
 import math
 from collections import defaultdict
@@ -12,12 +11,16 @@ class DeltaManager:
     
     def take_delta(self, current_state_tuple : tuple) -> tuple:
         full_current_state, decomposed_current_state = current_state_tuple
-        delta_full_state = np.subtract(full_current_state, self.full_delta_base)
-        delta_decomposed_state = np.subtract(decomposed_current_state, self.decomposed_delta_base)
+        delta_full_state = np.subtract(full_current_state, 
+                                       self.full_delta_base)
+        delta_decomposed_state = np.subtract(decomposed_current_state, 
+                                             self.decomposed_delta_base)
         promoted_full_delta = self.priority_promotion(delta_full_state)
         promoted_decomposed_delta = self.priority_promotion(delta_decomposed_state)
-        self.full_delta_base = np.add(self.full_delta_base, promoted_full_delta)
-        self.decomposed_delta_base = np.add(self.decomposed_delta_base, promoted_decomposed_delta)
+        self.full_delta_base = np.add(self.full_delta_base, 
+                                      promoted_full_delta)
+        self.decomposed_delta_base = np.add(self.decomposed_delta_base, 
+                                            promoted_decomposed_delta)
         return (promoted_full_delta, promoted_decomposed_delta)
 
     def priority_promotion(self, δt: np.array) -> np.array:
