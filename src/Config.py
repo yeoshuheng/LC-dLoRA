@@ -8,7 +8,9 @@ The following parameters are needed.
     main_dir : The directory to store all checkpoint sets.
     decomposed_layers : A list representing the layers we need to decompose into LoRA.
     device : Device to train the model on.
-    
+    learning_rate : Optimizer learning rate.
+    lc_bw : The bitwidth for lc-checkpoint mechanism.
+
     "epochs" :  ,
     "scaling" : 0.5,
     "branch_path" : ,
@@ -17,6 +19,7 @@ The following parameters are needed.
     "rank" : 8,
     "device" : "cpu", 
     "learning_rate" : 0.01,
+    "lc_bw" : 3,
 """
 
 class Config:
@@ -30,3 +33,4 @@ class Config:
         self.rank = config_dict["rank"]
         self.device = config_dict["device"]
         self.learning_rate = config_dict["learning_rate"]
+        self.lc_bw = config_dict["lc_bw"]
