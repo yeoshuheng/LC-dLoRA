@@ -9,6 +9,7 @@ import torch
 class Trainer:
     def __init__(self, config : Config):
         self.config = config
+        self.evaluation_log = []
 
     def get_optimizer(self, model_params):
         match self.config.optimizer:
@@ -23,6 +24,9 @@ class Trainer:
         match self.config.loss_function:
             case "accuracy":
                 return accuracy
+            
+    def get_evaluation_log(self):
+        return self.evaluation_log
 
     def train(self, model, train_loader : DataLoader,
             validation_loader : DataLoader = None):
@@ -76,7 +80,7 @@ class Trainer:
                         print("Running validation for {} Epoch, {} Iteration...".format(epoch, iter))
                         res = evaluation_function(model, validation_loader)
                         print("Results: {}".format(res))
-
+                        self.evaluation_log.append(res)
         print("Final evaluation: {}".format(evaluation_function(model, validation_loader)))
         checkpoint_manager.log_training_log()
         
