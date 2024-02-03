@@ -36,11 +36,11 @@ class SyntheticData(Dataset):
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
     
-def generate_synthetic_dataloader(mu_1, mu_2, std_1, std_2, test_size=1000):
-    dataset_1 = torch.normal(mean=mu_1, std=std_1, size=(10000, 2), dtype=torch.float32)
-    dataset_1_labels = torch.full(size=(10000,1), fill_value=0, dtype=torch.float32)
-    dataset_2 = torch.normal(mean=mu_2, std=std_2, size=(10000, 2), dtype=torch.float32)
-    dataset_2_labels = torch.full(size=(10000,1), fill_value=1, dtype=torch.float32)
+def generate_synthetic_dataloader(mu_1, mu_2, std_1, std_2, test_size=10000, t_size=100000):
+    dataset_1 = torch.normal(mean=mu_1, std=std_1, size=(t_size, 2), dtype=torch.float32)
+    dataset_1_labels = torch.full(size=(t_size,1), fill_value=0, dtype=torch.float32)
+    dataset_2 = torch.normal(mean=mu_2, std=std_2, size=(t_size, 2), dtype=torch.float32)
+    dataset_2_labels = torch.full(size=(t_size,1), fill_value=1, dtype=torch.float32)
     full_data = torch.cat((dataset_1, dataset_2))
     full_label = torch.cat((dataset_1_labels, dataset_2_labels))
     full_zipped = list(zip(full_data, full_label))
