@@ -13,25 +13,32 @@ The following parameters are needed.
     super_step : The number of checkpoints between each super step save.
     training_log : Where logs are stored, can be used in conjunction with 
         checkpoint manager to restore model at a certain iteration / epoch.
+    in_training_validation : If validation set is being used in training.
+    validation_frequency : How often we need to run the validation step. (eg. if validation_frequency = n,
+        we run the validation function every n iterations)
+    loss_function : Which loss function to use, pick from : ["accuracy"]
+    optimizer : Which optimizer to use, pick from : ["adam", "rmsprop", "sgd"]
 
     ===== Template =====
 
     config_dict = {
-        "epochs" :  ,
+        "epochs" :  3,
         "scaling" : 0.5,
-        "branch_path" : ,
-        "branch_dir" : ,
-        "logs_dir" : ,
-        "decomposed_layers" : ,
+        "branch_path" : HHD + "/branchpoints/",
+        "branch_dir" : HHD + "/dlora/checkpoints/",
+        "decomposed_layers" :  TEST_DECOMPOSED,
         "rank" : 8,
         "device" : "cpu", 
         "learning_rate" : 0.01,
         "lc_bw" : 3,
         "super_step" : 10,
-        "training_log" : ,
-        "base_path" : ,
-    }
-    
+        "training_log" : HHD + "/dlora/logs/",
+        "base_path" : HHD + "/dlora/checkpoints/",
+        "in_training_validation" : True,
+        "validation_frequency" : 100,
+        "loss_function" : "accuracy",
+        "optimizer" : "sgd"
+    } 
 """
 
 class Config:
@@ -48,3 +55,31 @@ class Config:
         self.lc_bw = config_dict["lc_bw"]
         self.super_step = config_dict["super_step"]
         self.training_log_dir = config_dict["training_log"]
+        self.in_training_validation = config_dict["in_training_validation"]
+        self.validation_frequency = config_dict["validation_frequency"]
+        self.loss_function = config_dict["loss_function"]
+        self.optimizer = config_dict["optimizer"]
+
+"""
+Experiment configurations
+"""
+TEST_DECOMPOSED_NN = ['linear_relu_stack.0', 'linear_relu_stack.2']
+
+SYNTHETIC_DATASET_CONFIG = Config({
+        "epochs" :  3,
+        "scaling" : 0.5,
+        "branch_path" : "/volumes/Ultra Touch/branchpoints/",
+        "branch_dir" : "/volumes/Ultra Touch/dlora/checkpoints/",
+        "decomposed_layers" : TEST_DECOMPOSED_NN,
+        "rank" : 8,
+        "device" : "cpu", 
+        "learning_rate" : 0.01,
+        "lc_bw" : 3,
+        "super_step" : 10,
+        "training_log" : "/volumes/Ultra Touch/dlora/logs/",
+        "base_path" : "/volumes/Ultra Touch/dlora/checkpoints/",
+        "in_training_validation" : True,
+        "validation_frequency" : 100,
+        "loss_function" : "accuracy",
+        "optimizer" : "sgd"
+    })
