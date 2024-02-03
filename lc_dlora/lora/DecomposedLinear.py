@@ -11,7 +11,7 @@ class DecomposedLinear(nn.Module):
                              dtype = torch.float32, requires_grad = True)
         self.alpha = nn.Parameter(alpha_t, requires_grad = True)
         self.beta = nn.Parameter(beta_t, requires_grad = True)
-        self.bias = nn.Parameter(bias.clone(), requires_grad = True)
+        self.bias = nn.Parameter(bias, requires_grad = True)
         torch.nn.init.kaiming_uniform_(self.alpha, 
                                        a = math.sqrt(5))
         torch.nn.init.zeros_(self.beta)
