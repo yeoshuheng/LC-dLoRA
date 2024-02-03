@@ -42,3 +42,4 @@ class DeltaManager:
             for p in pos:
                 new_δt[p] = qtVal
         new_δt = np.array(new_δt, dtype = np.float32) # must ensure float32 @ save for proper buffer read.
+        return new_δt

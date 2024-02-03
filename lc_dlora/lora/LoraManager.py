@@ -8,6 +8,7 @@ class LoraManager:
 
     def __init__(self, model, config : Config):
         self.decomposed_layers = config.decomposed_layers
+        self.config = config
         self.lora_rank = config.rank
         self.lora_scaling = config.scaling
         self.base_model = model  # We keep the model to convert here.
@@ -41,7 +42,7 @@ class LoraManager:
     
     def extractBias(self, model : torch.nn.Module):
         ret = {}
-        for name, param in model.state_dict():
+        for name, param in model.state_dict().items():
             if "bias" in name:
                 ret[name] = param
         return ret
@@ -54,16 +55,20 @@ class LoraManager:
         active_sd = copy.deepcopy(active_model.state_dict())
         rebuild_dict = copy.deepcopy(self.original_state_dictionary)
         need_to_restore = self.decomposed_layers
-        for name, weight in rebuild_dict.values():
-            if name in need_to_restore:
+        for name, weight in rebuild_dict.items():
+            if "bias" in name:
+                rebuild_dict[name] = active_sd["parameter_dict." + name]
+                continue
+            temp = ".".join(name.split(".")[:-1]) # Gets rid of weight / bias in front.
+            if temp in need_to_restore:
                 base = weight
-                alpha = active_sd["parameter_dict." + name + ".alpha"]
-                beta = active_sd["parameter_dict." + name + ".alpha"]
+                alpha = active_sd["parameter_dict." + temp + ".alpha"]
+                beta = active_sd["parameter_dict." + temp + ".beta"]
                 rebuild_dict[name] = merge_base_lora(
                     alpha=alpha , beta=beta,
                     base=base, scaling=self.lora_scaling)
             else: 
                 rebuild_dict[name] = active_sd["parameter_dict." + name]
         self.original_state_dictionary = rebuild_dict
-        self.model.load_state_dict(rebuild_dict)
+        self.base_model.load_state_dict(rebuild_dict)
         return self.createLoraModelFromBase()

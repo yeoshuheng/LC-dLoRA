@@ -35,9 +35,9 @@ class Trainer:
         initial_bases = lora_manager.extractLoraDeltaBases(lora_model)
         delta_manager = DeltaManager(self.config, initial_bases)  
         # Initial superstep save.
-        checkpoint_manager.save_super_step(sd=model.state_dict(), 
+        checkpoint_manager.save_super_step(sd=lora_model.state_dict(), 
                                                        set_id=set_id, iteration=0, epoch=0)
-        optimizer = self.get_optimizer(model.parameters)
+        optimizer = self.get_optimizer(model.parameters())
         loss_function = self.get_loss()
         evaluation_function = self.get_loss()
         
@@ -56,10 +56,10 @@ class Trainer:
 
                 if node_id == self.config.super_step: # Superstep
                     set_id, node_id = set_id + 1, 0
-                    checkpoint_manager.save_super_step(sd=model.state_dict(), 
+                    checkpoint_manager.save_super_step(sd=lora_model.state_dict(), 
                                                        set_id=set_id, iteration=iter, epoch=epoch)
-                    model = lora_manager.mergeLoraModel(model)
-                    optimizer = self.get_optimizer(model.parameters) # Reset optimizer
+                    model = lora_manager.mergeLoraModel(lora_model)
+                    optimizer = self.get_optimizer(lora_model.parameters()) # Reset optimizer
 
                 else: # Normal checkpoint process
                     node_id += 1
@@ -68,8 +68,9 @@ class Trainer:
                         promoted_delta_decomposed = delta_manager.take_delta(current_bases)
                     bias = lora_manager.extractBias(lora_model)
                     checkpoint_manager.save_delta(delta=(promoted_delta_full, 
-                                                   promoted_delta_decomposed), bias=bias,
-                                                   node_id=node_id, set_id=set_id)
+                                                promoted_delta_decomposed), bias=bias,
+                                                node_id=node_id, set_id=set_id,
+                                                iteration=iter,epoch=epoch)
                 if self.config.in_training_validation:
                     if iter % self.config.validation_frequency == 0:
                         print("Running validation for {} Epoch, {} Iteration...".format(epoch, iter))
