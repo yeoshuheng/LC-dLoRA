@@ -55,18 +55,20 @@ class Config:
         self.lc_bw = config_dict["lc_bw"]
         self.super_step = config_dict["super_step"]
         self.training_log_dir = config_dict["training_log"]
-        self.in_training_validation = config_dict["in_training_validation"]
-        self.validation_frequency = config_dict["validation_frequency"]
         self.loss_function = config_dict["loss_function"]
         self.optimizer = config_dict["optimizer"]
+        self.in_training_validation = config_dict["in_training_validation"]
+        self.validation_frequency = config_dict["validation_frequency"]
+        self.evaluation_function = config_dict["evaluation_function"]
 
 """
 Experiment configurations
 """
-TEST_DECOMPOSED_NN = ['linear_relu_stack.0', 'linear_relu_stack.2']
+TEST_DECOMPOSED_NN = ['linear_relu_stack.2', 'linear_relu_stack.4', 'linear_relu_stack.6',
+                      'linear_relu_stack.8', 'linear_relu_stack.10']
 
 SYNTHETIC_DATASET_CONFIG = Config({
-        "epochs" :  3,
+        "epochs" :  1,
         "scaling" : 0.5,
         "branch_path" : "/volumes/Ultra Touch/branchpoints/",
         "branch_dir" : "/volumes/Ultra Touch/dlora/checkpoints/",
@@ -79,7 +81,8 @@ SYNTHETIC_DATASET_CONFIG = Config({
         "training_log" : "/volumes/Ultra Touch/dlora/logs/",
         "base_path" : "/volumes/Ultra Touch/dlora/checkpoints/",
         "in_training_validation" : True,
-        "validation_frequency" : 100,
-        "loss_function" : "accuracy",
-        "optimizer" : "sgd"
+        "validation_frequency" : 3,
+        "loss_function" : "binary_cross_entropy",
+        "optimizer" : "sgd",
+        "evaluation_function" : "binary_accuracy"
     })
