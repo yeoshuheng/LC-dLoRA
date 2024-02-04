@@ -6,7 +6,7 @@ Delta-compression framework for model training using Low-Rank Approximation (LoR
 
 ### Credits
 
-Built with guidance and support from Prof. Ooi Wei Tsang (NUS).
+Built with guidance and support from Prof. Ooi Wei Tsang.
 
 Design of the mechanism inspired by the following works:
 
