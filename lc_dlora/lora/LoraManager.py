@@ -1,6 +1,5 @@
 from lc_dlora.Config import Config
 from lc_dlora.lora import AutoLoraModel
-import numpy as np
 import copy, torch
 from lc_dlora.utils import flatten_weight_tensor, merge_base_lora
 

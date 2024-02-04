@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch
 from lc_dlora.Config import Config
 from collections import deque
 from lc_dlora.lora.DecomposedLinear import DecomposedLinear
