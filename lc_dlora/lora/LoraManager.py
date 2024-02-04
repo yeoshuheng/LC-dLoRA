@@ -28,15 +28,18 @@ class LoraManager:
         fullstate_tensor_list = []
         for layer in decomposed:
             decomposed_linear_module = module_map[layer]
-            decomposed_tensor_list.append(decomposed_linear_module.alpha)
-            decomposed_tensor_list.append(decomposed_linear_module.beta)
+            cloned_alpha = decomposed_linear_module.alpha.clone().detach()
+            cloned_beta = decomposed_linear_module.beta.clone().detach()
+            decomposed_tensor_list.append(cloned_alpha)
+            decomposed_tensor_list.append(cloned_beta)
         for layer in full:
             if layer not in module_map:
                 continue # Skip pass pooling & ReLU layers.
             full_module = module_map[layer]
             if not hasattr(full_module, 'weight'):
                 continue
-            fullstate_tensor_list.append(full_module.weight)
+            cloned_weight = full_module.weight.clone().detach()
+            fullstate_tensor_list.append(cloned_weight)
         return (flatten_weight_tensor(fullstate_tensor_list), \
             flatten_weight_tensor(decomposed_tensor_list))
     

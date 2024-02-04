@@ -3,8 +3,12 @@ from lc_dlora.lora.LoraManager import LoraManager
 from lc_dlora.lc.DeltaManager import DeltaManager
 from torch.utils.data.dataloader import DataLoader
 from lc_dlora.CheckpointManager import CheckpointManager
-from lc_dlora.metrics.metrics import accuracy
+from lc_dlora.metrics.metrics import accuracy, accuracy_binary
 import torch
+
+class ParameterNotFoundException(Exception):
+    def __init__(self, param):
+        super().__init__("Parameter: {} cannot be found".format(param))
 
 class Trainer:
     def __init__(self, config : Config):
@@ -19,12 +23,27 @@ class Trainer:
                 return torch.optim.Adam(model_params, lr = self.config.learning_rate)
             case "rmsprop":
                 return torch.optim.RMSprop(model_params, lr = self.config.learning_rate)
+            case _:
+                raise ParameterNotFoundException(self.config.optimizer)
 
-    def get_loss(self):
-        match self.config.loss_function:
+    def get_evaluation_function(self):
+        match self.config.evaluation_function:
             case "accuracy":
                 return accuracy
+            case "binary_accuracy":
+                return accuracy_binary
+            case _:
+                raise ParameterNotFoundException(self.config.evaluation_function)
             
+    def get_loss(self):
+        match self.config.loss_function:
+            case "binary_cross_entropy":
+                return torch.nn.BCELoss()
+            case "cross_entropy":
+                return torch.nn.CrossEntropyLoss()
+            case _:
+                raise ParameterNotFoundException(self.config.loss_function)
+        
     def get_evaluation_log(self):
         return self.evaluation_log
 
@@ -43,7 +62,7 @@ class Trainer:
                                                        set_id=set_id, iteration=0, epoch=0)
         optimizer = self.get_optimizer(model.parameters())
         loss_function = self.get_loss()
-        evaluation_function = self.get_loss()
+        evaluation_function = self.get_evaluation_function()
         
         # Expected save pattern with superset = 5 ([s] == superset):
         # [s], 0, 1, 2, 3, 4, [s], 0, 1, 2, 3, 4, [s], 0, 1, 2, 3, 4
@@ -54,6 +73,8 @@ class Trainer:
                 inputs, labels = data
                 optimizer.zero_grad()
                 outputs = lora_model(inputs)
+                if self.config.loss_function == "binary_cross_entropy":
+                    outputs = torch.sigmoid(outputs)
                 loss = loss_function(outputs, labels)
                 loss.backward()
                 optimizer.step()
@@ -78,9 +99,9 @@ class Trainer:
                 if self.config.in_training_validation:
                     if iter % self.config.validation_frequency == 0:
                         print("Running validation for {} Epoch, {} Iteration...".format(epoch, iter))
-                        res = evaluation_function(model, validation_loader)
+                        res = evaluation_function(lora_model, validation_loader)
                         print("Results: {}".format(res))
                         self.evaluation_log.append(res)
-        print("Final evaluation: {}".format(evaluation_function(model, validation_loader)))
+        print("Final evaluation: {}".format(evaluation_function(lora_model, validation_loader)))
         checkpoint_manager.log_training_log()
         
