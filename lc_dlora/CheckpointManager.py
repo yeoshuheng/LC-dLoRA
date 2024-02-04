@@ -34,7 +34,7 @@ class CheckpointManager:
         with open(sp, "wb") as f:
             pickle.dump((compressed_delta_full, 
                          compressed_delta_decomposed, bias), f)
-        self.training_log[(epoch, iteration)] = (node_id, set_id)
+        self.training_log["{}-{}".format(epoch, iteration)] = "{}-{}".format(node_id, set_id)
 
     def save_super_step(self, sd, set_id, iteration, epoch):
         setdir = self.maindir + "/set{}".format(set_id)
@@ -42,7 +42,8 @@ class CheckpointManager:
         checkpoint_name = "lc-dlora_snapshot_set_{}.pt".format(set_id)
         sp = os.path.join(setdir, checkpoint_name)
         torch.save(sd, sp)
-        self.training_log[(epoch, iteration)] = (-1, set_id) # Super set saves do not have a node id.
+        self.training_log["{}-{}".format(epoch, iteration)] \
+            = "{}-{}".format(-1, set_id) # Super set saves do not have a node id.
 
     def load_delta(self, node_id, set_id) -> tuple:
         setdir = self.maindir + "/set{}".format(set_id)

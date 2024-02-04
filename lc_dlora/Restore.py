@@ -26,7 +26,7 @@ class Restore:
         print(output)
 
     def restore(self, iteration, epoch, fresh_model):
-        node_id, set_id = self.training_log[(epoch, iteration)]
+        node_id, set_id = self.training_log["{}-{}".format(epoch, iteration)]
         if node_id == -1:
             self.checkpoint_manager.restore_checkpoint_superstep(set_id, fresh_model)
         else:
