@@ -2,7 +2,7 @@
 
 ### Introduction
 
-Delta-compression framework for model training using Low-Rank Approximation (LoRA) and delta-encoding.
+Delta-compression framework for model training using Low-Rank Adapatation (LoRA) and delta-encoding.
 
 ### Credits
 
