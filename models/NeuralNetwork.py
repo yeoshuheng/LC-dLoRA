@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import DataLoader, Dataset
 
 class NeuralNetwork(nn.Module):

@@ -2,9 +2,12 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-class AlexNet(nn.Module):   
+"""
+Adapted AlexNet for single-channel MNIST data.
+"""
+class AlexNet_MNIST(nn.Module):   
     def __init__(self, num=10):
-        super(AlexNet, self).__init__()
+        super(AlexNet_MNIST, self).__init__()
         self.feature = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=5, stride=1, padding=1),
             nn.ReLU(inplace=True), 
