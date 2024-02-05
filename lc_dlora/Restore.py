@@ -10,26 +10,25 @@ class Restore:
         self.training_log = self.load_existing_training_log()
     
     def load_existing_training_log(self):
-        with open(os.path.join(self.maindir, "log.json"), "r") as f:
+        with open(os.path.join(self.config.main_dir, "log.json"), "r") as f:
             training_log = json.load(f)
         return training_log
     
     def view_logs(self):
         iter_epoch = self.training_log.keys()
         output_dict = {}
-        for epoch, iteration in iter_epoch:
+        for epoch_iteration in iter_epoch:
+            epoch, iteration = epoch_iteration.split("~")
             if epoch not in output_dict:
                 output_dict[epoch] = []
             output_dict[epoch].append(iteration)
         output = '\n'.join("Epoch {} : \n {}".format(k, 
                         ', '.join(output_dict[k])) for k in output_dict.keys())
-        print(output)
 
-    def restore(self, iteration, epoch, fresh_model):
-        node_id, set_id = self.training_log["{}-{}".format(epoch, iteration)]
-        if node_id == -1:
-            self.checkpoint_manager.restore_checkpoint_superstep(set_id, fresh_model)
-        else:
-            self.checkpoint_manager.restore_checkpoint(node_id, set_id, fresh_model)
+    def restore(self, iteration, epoch, model):
+        #print(self.training_log["{}~{}".format(epoch, iteration)])
+        node_id, set_id = self.training_log["{}~{}".format(epoch, iteration)].split("~")
+        node_id, set_id = int(node_id), int(set_id)
+        self.checkpoint_manager.restore_checkpoint(node_id, set_id, model)
 
 

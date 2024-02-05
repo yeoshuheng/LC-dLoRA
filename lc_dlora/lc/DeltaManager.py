@@ -17,10 +17,13 @@ class DeltaManager:
                                              self.decomposed_delta_base)
         promoted_full_delta = self.priority_promotion(delta_full_state)
         promoted_decomposed_delta = self.priority_promotion(delta_decomposed_state)
+        #print("promoted: \n full: {} \n base: {}".format(promoted_full_delta, promoted_decomposed_delta))
+        #print("current: \n full: {} \n base: {}".format(self.full_delta_base, self.decomposed_delta_base))
         self.full_delta_base = np.add(self.full_delta_base, 
                                       promoted_full_delta)
         self.decomposed_delta_base = np.add(self.decomposed_delta_base, 
                                             promoted_decomposed_delta)
+        #print("post-delta: \n full: {} \n base: {}".format(self.full_delta_base, self.decomposed_delta_base))
         return (promoted_full_delta, promoted_decomposed_delta)
 
     def priority_promotion(self, δt: np.array) -> np.array:

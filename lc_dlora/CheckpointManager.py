@@ -34,7 +34,7 @@ class CheckpointManager:
         with open(sp, "wb") as f:
             pickle.dump((compressed_delta_full, 
                          compressed_delta_decomposed, bias), f)
-        self.training_log["{}-{}".format(epoch, iteration)] = "{}-{}".format(node_id, set_id)
+        self.training_log["{}~{}".format(epoch, iteration)] = "{}~{}".format(node_id, set_id)
 
     def save_super_step(self, sd, set_id, iteration, epoch):
         setdir = self.maindir + "/set{}".format(set_id)
@@ -42,8 +42,8 @@ class CheckpointManager:
         checkpoint_name = "lc-dlora_snapshot_set_{}.pt".format(set_id)
         sp = os.path.join(setdir, checkpoint_name)
         torch.save(sd, sp)
-        self.training_log["{}-{}".format(epoch, iteration)] \
-            = "{}-{}".format(-1, set_id) # Super set saves do not have a node id.
+        self.training_log["{}~{}".format(epoch, iteration)] \
+            = "{}~{}".format(-1, set_id) # Super set saves do not have a node id.
 
     def load_delta(self, node_id, set_id) -> tuple:
         setdir = self.maindir + "/set{}".format(set_id)
@@ -64,9 +64,6 @@ class CheckpointManager:
     def save_base(self, base):
         torch.save(base.state_dict(), self.maindir + "/base.pt")
     
-    def restore_checkpoint_superstep(self, set_id, model) -> dict:
-        model.load_state_dict(self.load_super_step(set_id))
-
     def extract_alpha_beta_superstep(self, sd : dict):
         alpha_betas = []
         for name in self.decomposed_layers:
@@ -76,8 +73,10 @@ class CheckpointManager:
     
     def extract_non_decomposed(self, sd : dict):
         full_weights = []
-        for name, layer in sd.values():
-            if name not in self.decomposed_layers:
+        for name, layer in sd.items():
+            temp = ".".join(name.split(".")[1:-1]) # Remove .parameter_dict and .alpha.
+            #print("loading for: {}".format(temp))
+            if temp not in self.decomposed_layers and "bias" not in name:
                 full_weights.append(layer)
         return flatten_weight_tensor(full_weights)
         
@@ -88,21 +87,23 @@ class CheckpointManager:
         base_model_sd = torch.load(self.maindir + "/base.pt")
         decomposed_base = np.sum(lora_snapshots, axis = 0)
         full_base = self.extract_non_decomposed(self.load_super_step(set_id))
-        checkpoints = [self.load_delta(i, set_id) for i in range(0, node_id + 1)]
+        checkpoints = [self.load_delta(i, set_id) for i in range(1, node_id + 1)]
         final_bias = checkpoints[-1][-1]
         for full_delta, decomposed_delta, _ in checkpoints:
             full_base = np.add(full_base, full_delta)
             decomposed_base = np.add(decomposed_base, decomposed_delta)
         new_sd = model.state_dict()
         last_idx, last_idx_dcomp = 0, 0
-        for name, param in new_sd.values():
+        for name, param in new_sd.items():
+            #print("restoring for: {}".format(name))
             if "bias" in name:
-                new_sd[name] = final_bias[name]
+                new_sd[name] = final_bias["parameter_dict." + name]
                 continue
             dim = param.numpy().shape
             if not dim:
                 continue
-            if name in decomposed_layers:
+            temp = ".".join(name.split(".")[:-1])
+            if temp in decomposed_layers:
                 t_element_alpha = dim[0] * self.rank
                 t_element_beta = dim[1] * self.rank
                 alpha = decomposed_base[last_idx_dcomp : last_idx_dcomp + t_element_alpha]
@@ -111,12 +112,16 @@ class CheckpointManager:
                 last_idx_dcomp += t_element_beta
                 alpha = torch.unflatten(torch.from_numpy(np.copy(alpha)), -1, (dim[0], self.rank))
                 beta = torch.unflatten(torch.from_numpy(np.copy(beta)), -1, (self.rank, dim[1]))
-                restored_decomp = merge_base_lora(alpha, beta, base_model_sd[name], self.scaling)
+                base = base_model_sd[name]
+                restored_decomp = merge_base_lora(alpha, beta, base, self.scaling)
                 new_sd[name] = restored_decomp
-                continue
+                #test_decomp += t_element_alpha + t_element_beta
             else:
                 t_elements = np.prod(dim)
                 needed_ele = full_base[last_idx : last_idx + t_elements]
-                new_sd[name] = torch.unflatten(torch.from_numpy(np.copy(needed_ele)), -1, dim)
-                last_idx += t_elements
+                #print("t_element: {}".format(t_elements))
+                #test += t_elements
+                #print("total_seen: {}".format(test))
+                new_sd[name] = torch.add(torch.unflatten(torch.from_numpy(np.copy(needed_ele)), -1, dim), 
+                                         base_model_sd[name])
         model.load_state_dict(new_sd)

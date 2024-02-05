@@ -20,5 +20,5 @@ class DecomposedLinear(nn.Module):
         self.scaling = scaling
 
     def forward(self, x):
-        h = x @ self.base.T + self.scaling * (x @ (self.alpha @ self.beta).T)
+        h = x @ (self.base.T + self.scaling * (self.alpha @ self.beta).T)
         return h + self.bias

@@ -4,6 +4,7 @@ The following parameters are needed.
 
     epochs : The number of epochs the model is being trained for.
     scaling : The scaling factor of dLoRA layers. (Influence dLoRA weights has on the model)
+    branch_path : The file path to the model at the branching point.
     main_dir : The directory to store all checkpoint sets.
     decomposed_layers : A list representing the layers we need to decompose into LoRA.
     device : Device to train the model on.

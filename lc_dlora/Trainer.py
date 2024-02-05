@@ -83,7 +83,7 @@ class Trainer:
                     set_id, node_id = set_id + 1, 0
                     checkpoint_manager.save_super_step(sd=lora_model.state_dict(), 
                                                        set_id=set_id, iteration=iter, epoch=epoch)
-                    model = lora_manager.mergeLoraModel(lora_model)
+                    lora_model = lora_manager.mergeLoraModel(lora_model)
                     optimizer = self.get_optimizer(lora_model.parameters()) # Reset optimizer
 
                 else: # Normal checkpoint process
