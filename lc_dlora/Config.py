@@ -4,7 +4,6 @@ The following parameters are needed.
 
     epochs : The number of epochs the model is being trained for.
     scaling : The scaling factor of dLoRA layers. (Influence dLoRA weights has on the model)
-    branch_path : The file path to the model at the branching point.
     main_dir : The directory to store all checkpoint sets.
     decomposed_layers : A list representing the layers we need to decompose into LoRA.
     device : Device to train the model on.
@@ -24,8 +23,7 @@ The following parameters are needed.
     config_dict = {
         "epochs" :  3,
         "scaling" : 0.5,
-        "branch_path" : HHD + "/branchpoints/",
-        "branch_dir" : HHD + "/dlora/checkpoints/",
+        "main_dir" : HHD + "/dlora/checkpoints/",
         "decomposed_layers" :  TEST_DECOMPOSED,
         "rank" : 8,
         "device" : "cpu", 
@@ -46,8 +44,7 @@ class Config:
     def __init__(self, config_dict : dict):
         self.epochs = config_dict["epochs"]
         self.scaling = config_dict["scaling"]
-        self.branch_path = config_dict["branch_path"]
-        self.main_dir = config_dict["branch_dir"]
+        self.main_dir = config_dict["main_dir"]
         self.decomposed_layers = config_dict["decomposed_layers"]
         self.rank = config_dict["rank"]
         self.device = config_dict["device"]
@@ -70,8 +67,7 @@ TEST_DECOMPOSED_NN = ['linear_relu_stack.2', 'linear_relu_stack.4', 'linear_relu
 SYNTHETIC_DATASET_CONFIG = Config({
         "epochs" :  1,
         "scaling" : 0.5,
-        "branch_path" : "/volumes/Ultra Touch/branchpoints/",
-        "branch_dir" : "/volumes/Ultra Touch/dlora/checkpoints/",
+        "main_dir" : "/volumes/Ultra Touch/dlora/checkpoints/",
         "decomposed_layers" : TEST_DECOMPOSED_NN,
         "rank" : 8,
         "device" : "cpu", 
